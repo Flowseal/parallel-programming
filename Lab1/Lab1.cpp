@@ -31,9 +31,8 @@ int _tmain(int argc, _TCHAR* argv[])
 	HANDLE* handles = new HANDLE[threadsCount];
 	for (int i = 0; i < threadsCount; i++) 
 	{
-		Args* args = static_cast<Args*>(std::malloc(sizeof(Args)));
-		args = new(args) Args(i, i % 2 == 0 ? 3000 : 1000);
-		handles[i] = CreateThread(NULL, 0, &ThreadProc, args, NULL, NULL);
+		Args* args = new Args(i, i % 2 == 0 ? 3000 : 1000);
+		handles[i] = CreateThread(NULL, 0, &ThreadProc, args, CREATE_SUSPENDED, NULL);
 	}
 
 	WaitForMultipleObjects(threadsCount, handles, true, INFINITE);
