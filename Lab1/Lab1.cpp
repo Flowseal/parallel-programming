@@ -37,6 +37,12 @@ int _tmain(int argc, _TCHAR* argv[])
 	}
 
 	WaitForMultipleObjects(threadsCount, handles, true, INFINITE);
+
+	for (int i = 0; i < threadsCount; i++)
+	{
+		CloseHandle(handles[i]);
+	}
+
 	delete[] handles;
 	return 0;
 }
