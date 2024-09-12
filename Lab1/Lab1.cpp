@@ -32,7 +32,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	for (int i = 0; i < threadsCount; i++) 
 	{
 		Args* args = new Args(i, i % 2 == 0 ? 3000 : 1000);
-		handles[i] = CreateThread(NULL, 0, &ThreadProc, args, CREATE_SUSPENDED, NULL);
+		handles[i] = CreateThread(NULL, 0, &ThreadProc, args, NULL, NULL);
 	}
 
 	WaitForMultipleObjects(threadsCount, handles, true, INFINITE);
