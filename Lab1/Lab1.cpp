@@ -18,6 +18,7 @@ DWORD WINAPI ThreadProc(CONST LPVOID lpParam)
 	Sleep(args->sleepTime);
 	std::osyncstream(std::cout) << args->id << " End" << std::endl;
 
+	delete args;
 	ExitThread(0);
 }
 
@@ -36,5 +37,6 @@ int _tmain(int argc, _TCHAR* argv[])
 	}
 
 	WaitForMultipleObjects(threadsCount, handles, true, INFINITE);
+	delete[] handles;
 	return 0;
 }
