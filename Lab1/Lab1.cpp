@@ -8,7 +8,7 @@ struct Args {
 	int id;
 	int sleepTime;
 	Args(int _id, int _sleepTime) : id(_id), sleepTime(_sleepTime) {}
-};
+};	
 
 DWORD WINAPI ThreadProc(CONST LPVOID lpParam)
 {
@@ -19,7 +19,7 @@ DWORD WINAPI ThreadProc(CONST LPVOID lpParam)
 	std::osyncstream(std::cout) << args->id << " End" << std::endl;
 
 	delete args;
-	ExitThread(0);
+	return 0;
 }
 
 int _tmain(int argc, _TCHAR* argv[])
@@ -31,7 +31,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	HANDLE* handles = new HANDLE[threadsCount];
 	for (int i = 0; i < threadsCount; i++) 
 	{
-		Args* args = new Args(i, i % 2 == 0 ? 3000 : 1000);
+		Args* args = new Args(i, i * 100);
 		handles[i] = CreateThread(NULL, 0, &ThreadProc, args, NULL, NULL);
 	}
 
@@ -39,7 +39,8 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	for (int i = 0; i < threadsCount; i++)
 	{
-		CloseHandle(handles[i]);
+		if (handles[i])
+			CloseHandle(handles[i]);
 	}
 
 	delete[] handles;
