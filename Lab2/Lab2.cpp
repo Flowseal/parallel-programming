@@ -19,9 +19,12 @@ int main(int argc, char* argv[])
 
     if (!args)
     {
-        cout << "Wrong arguments: <input file name> <output file name> <cores count> <threads count>" << endl;
+        cout << "Wrong arguments: <inputFile> <outputFile> <cores> <threads>" << endl;
         return 1;
     }
+
+    cout << "Cores: " << args->coresCount << endl;
+    cout << "Threads: " << args->threadsCount << endl;
 
     try
     {
