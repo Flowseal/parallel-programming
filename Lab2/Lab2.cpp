@@ -6,111 +6,113 @@ using namespace bmp;
 
 struct ThreadArgs
 {
-    Bitmap* image;
-    int lineIndex;
-    int lineSize;
+	Bitmap* image;
+	int lineIndex;
+	int lineSize;
 };
 
 DWORD WINAPI Blur(CONST LPVOID lpParam);
 
 int main(int argc, char* argv[])
 {
-    auto args = ParseArgs(argc, argv);
+	auto args = ParseArgs(argc, argv);
 
-    if (!args)
-    {
-        cout << "Wrong arguments: <inputFile> <outputFile> <cores> <threads>" << endl;
-        return 1;
-    }
+	if (!args)
+	{
+		cout << "Wrong arguments: <inputFile> <outputFile> <cores> <threads>" << endl;
+		return 1;
+	}
 
-    cout << "Cores: " << args->coresCount << endl;
-    cout << "Threads: " << args->threadsCount << endl;
+	int x;
+	cin >> x;
+	cout << "Cores: " << args->coresCount << endl;
+	cout << "Threads: " << args->threadsCount << endl;
 
-    try
-    {
-        LimitCores(args->coresCount);
-        auto timeEllapsed = Timer();
+	try
+	{
+		LimitCores(args->coresCount);
+		auto timeEllapsed = Timer();
 
-        Bitmap* image = new Bitmap(args->inputFileName);
-        int lineHeight = image->height() / args->threadsCount;
+		Bitmap* image = new Bitmap(args->inputFileName);
+		int lineHeight = image->height() / args->threadsCount;
 
-        HANDLE* handles = new HANDLE[args->threadsCount];
+		HANDLE* handles = new HANDLE[args->threadsCount];
 
-        for (int i = 0; i < args->threadsCount; i++)
-        {
-            handles[i] = CreateThread(NULL, 0, &Blur, new ThreadArgs{image, i, lineHeight}, NULL, NULL);
-        }
+		for (int i = 0; i < args->threadsCount; i++)
+		{
+			handles[i] = CreateThread(NULL, 0, &Blur, new ThreadArgs{ image, i, lineHeight }, NULL, NULL);
+		}
 
-        WaitForMultipleObjects(args->threadsCount, handles, true, INFINITE);
+		WaitForMultipleObjects(args->threadsCount, handles, true, INFINITE);
 
-        image->save(args->outputFileName);
-        cout << "Time: " << timeEllapsed() << endl;
-    }
-    catch (const Exception& e)
-    {
-        cout << e.what() << endl;
-        return 1;
-    }
+		image->save(args->outputFileName);
+		cout << "Time: " << timeEllapsed() << endl;
+	}
+	catch (const Exception& e)
+	{
+		cout << e.what() << endl;
+		return 1;
+	}
 
-    return 0;
+	return 0;
 }
 
 Pixel Average(vector<Pixel> const& v)
 {
-    auto const count = v.size();
-    int sumR = 0;
-    int sumG = 0;
-    int sumB = 0;
+	auto const count = v.size();
+	int sumR = 0;
+	int sumG = 0;
+	int sumB = 0;
 
-    for (auto const& pixel : v)
-    {
-        sumR += pixel.r;
-        sumG += pixel.g;
-        sumB += pixel.b;
-    }
+	for (auto const& pixel : v)
+	{
+		sumR += pixel.r;
+		sumG += pixel.g;
+		sumB += pixel.b;
+	}
 
-    return Pixel(sumR / count, sumG / count, sumB / count);
+	return Pixel(sumR / count, sumG / count, sumB / count);
 }
 
 
 Pixel GetAverageColor(Bitmap const& img, int x, int y)
 {
-    static const int BLUR_SIZE = 5;
-    vector<Pixel> pixels{};
+	static const int BLUR_SIZE = 3;
+	vector<Pixel> pixels{};
 
-    for (int i = -BLUR_SIZE; i <= BLUR_SIZE; i++) {
-        if (x + i < 0 || x + i >= img.width())
-            continue;
+	for (int i = -BLUR_SIZE; i <= BLUR_SIZE; i++) {
+		if (x + i < 0 || x + i >= img.width())
+			continue;
 
-        for (int j = -BLUR_SIZE; j <= BLUR_SIZE; j++) {
-            if (y + j < 0 || y + j >= img.height())
-                continue;
+		for (int j = -BLUR_SIZE; j <= BLUR_SIZE; j++) {
+			if (y + j < 0 || y + j >= img.height())
+				continue;
 
-            pixels.push_back(img.get(x+i, y+j));
-        }
-    }
+			pixels.push_back(img.get(x + i, y + j));
+		}
+	}
 
-    return Average(pixels);
+	return Average(pixels);
 }
 
 DWORD WINAPI Blur(CONST LPVOID lpParam)
 {
-    auto data = reinterpret_cast<ThreadArgs*>(lpParam);
+	auto data = reinterpret_cast<ThreadArgs*>(lpParam);
 
-    int startY = data->lineIndex * data->lineSize;
-    int endY = startY + data->lineSize;
+	int startY = data->lineIndex * data->lineSize;
+	int endY = startY + data->lineSize;
 
-    auto image = data->image;
-    int imageWidth = image->width();
+	auto image = data->image;
+	int imageWidth = image->width();
 
-    for (int y = startY; y < endY; ++y)
-    {
-        for (int x = 0; x < imageWidth; ++x)
-        {
-            image->set(x, y, GetAverageColor(*image, x, y));
-        }
-    }
+	for (int y = startY; y < endY; ++y)
+	{
+		for (int x = 0; x < imageWidth; ++x)
+		{
+			image->set(x, y, GetAverageColor(*image, x, y));
+		}
+	}
 
-    delete data;
-    return 0;
+	delete data;
+	return 0;
 }
