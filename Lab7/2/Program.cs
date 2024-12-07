@@ -1,4 +1,7 @@
-﻿using System.Diagnostics;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.Diagnostics;
 using System.Net.Http.Json;
 
 HttpClient client = new HttpClient();
@@ -37,7 +40,10 @@ async Task DownloadRandomImageAsync()
             string imageUrl = response.Message;
             Console.WriteLine($"Starting downloading from url: {imageUrl}");
 
-            await client.GetByteArrayAsync(imageUrl);
+            byte[] byteArray = await client.GetByteArrayAsync(imageUrl);
+            string fileName = $"ASYNC {imageUrl.Split("/")[^2]} {imageUrl.Split("/")[^1]}";
+            await File.WriteAllBytesAsync(fileName, byteArray);
+
             Console.WriteLine($"Image from {imageUrl} downloaded successfully");
         }
         else
@@ -69,13 +75,17 @@ void DownloadRandomImage()
 {
     try
     {
-        var response = client.GetFromJsonAsync<ApiResponse>(apiUrl).Result;
+        ApiResponse response = client.GetFromJsonAsync<ApiResponse>(apiUrl).Result;
         if (response?.Status == "success")
         {
             string imageUrl = response.Message;
             Console.WriteLine($"Starting downloading from url: {imageUrl}");
 
-            client.GetByteArrayAsync(imageUrl);
+            byte[] byteArray = client.GetByteArrayAsync(imageUrl).Result;
+
+            string fileName = $"SYNC {imageUrl.Split("/")[^2]} {imageUrl.Split("/")[^1]}";
+            File.WriteAllBytes(fileName, byteArray);
+
             Console.WriteLine($"Image from {imageUrl} downloaded successfully");
         }
         else
